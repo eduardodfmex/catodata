@@ -1,0 +1,306 @@
+# catodata
+---
+layout: post
+title: "CARTODATA transforms their mapping and cadaster solution moving to the cloud using App Service and Container Services architecture with OSS DevOps practices."
+author: "Eduardo Sánchez Razo"
+author-link: "https://twitter.com/eduardodfmex"
+#author-image: "{{ site.baseurl }}/images/cartodata001.jpg"
+date: 2017-09-14
+categories: [Application Service, Linux and DevOps]
+color: "blue"
+#image: "{{ site.baseurl }}/images/imagename.png" #should be ~350px tall
+excerpt: Microsoft and CARTODATA worked together to improve the deployment of the e-Carto Mapping and Cadaster solution using DevOps CI and IaC practices, Migrating the solution from on-premises to Azure App Service and the use of Azure Container Service SWARM and Azure Container Registry technologies....
+language: [English]
+verticals: [Mapping, Social]
+geolocation: [North America]
+#permalink: /<page-title>.html
+---
+### Company Profile ###
+
+Cartodata is a company of technology, tradition and transparency dedicated to the generation an administration of geographic information and georeferenced services in México, they generate and maintain the intellectual property of revolutionary technologies and products like Oblix®, Visión360®, AU4® & eCarto®, they also operate the most advanced photogrammetric cameras and sensors LiDAR on the Mexican market. Cartodata solutions benefit the cadaster (municipalities and states) and public register of the property, forest management and natural resources, they also help to monitor the risk management, archeology, agronomy. In general, their solutions help any industry that requires geographical information for analysis or resource management.
+
+
+### Key Technologies used ###
+* Azure Containers SWARM
+* Web Application Service
+* Azure Container Service
+* Docker Swarm Cluster
+* Docker containers
+* Azure Container Registry
+* Azure Blob Storage
+* Linux Virtual Machines
+* PostgreSQL
+* Redis
+* Azure Networking
+* Azure Backup
+
+
+### Value stream mapping ###
+
+The Value Stream Mapping take 1 day, during this time CARTODATA and Microsoft we could analyze the build and deployment process, they could see their process in a different perspective because even they know the hole process there was many subtasks of which they don’t have the real time, that they don’t know the Lean time of the full steps and they also don’t know waste types, that information allowed them to focus on the process that can be improved.
+
+![Value Stream Mapping]({{ site.baseurl }}/images/cartodata002.jpg)
+* Figure : Value Stream Map CARTODATA e-Carto
+
+
+![Team CARTODATA and Microsoft generating Value Stream Mapping]({{ site.baseurl }}/images/catodata003.jpg)
+* Figure : Cartodata & Microsoft team generating the Value Stream Map
+
+
+### Lead Time and Waste ###
+
+After the value stream mapping, they discover their principal wasting time type that was M Manual process, D Defects, PD Partial Done and EF Extra Features. The total Lean Time was 650 days, Process Time 462 days and waiting time 188 days.
+
+![Lead time]({{ site.baseurl }}/images/leadtime004.jpg)
+* Figure: Cartodata Lead, Process and Wait times in dais.
+
+
+### Waste Types ###
+
+We also explain to ICALIA LABS the waste types that happen in de deployment and delivery of the solutions that we deliver to the client, this classification of waste was new for the team, and they gone a used in her new development process.
+
+![Waste Types]({{ site.baseurl }}/images/cartodata005.jpg)
+* Figure : Cartodata Waste Types
+
+
+ ### Current Architecture ###
+
+* Windows Server 2012 R2
+* IIS8
+* .net & C# APP
+* On Premise Debian Linux Server´s
+* Nginx
+* PostgreSQL Server
+* Redis Server
+* Storage Server
+
+![Original Architecture]({{ site.baseurl }}/images/cartodata006.jpg)
+* Figure : Original Architecture
+
+
+
+### Cartodata Hackfest ###
+The team work together 1 week, on that time we could deliver a new Azure cloud functional architecture that give to Cartodata man benefits from a microservices and cloud architecture.
+
+### Pain Points ###
+* The actual architecture of e-Carto is based in one standalone on-premise server, every new client that wants the solution they need to buy a new server to install the solution in the customer offices, data center or communications room. In many cases the server purchase takes more than one month and requires several validations from the government, (the principal client of Cartodata was the government). 
+* Because each client purchases their own solution the deployment process takes several months this process was handmade by Implementation and Developer teams.
+* This independent on-premise solution demands many support and maintenance to keep the solution working, resolve hardware issues, updates, power outages, security issues and new requirements. 
+* The one server on-premise solution doesn’t have high availability, dynamic growth and don’t have SLA.
+* Cartodata want to deploy their solution to the final client so they also need an enterprise grade architecture to their solution.
+
+
+### Proposed Solution ###
+We decide to generate a 3-level architecture using the best options for each component, and implement DevOps practices to reduce the process times that depend on the Developer area, these 3 levels was the following:
+* Application Service to mount the Web Application that receive and present the solution, maps and renders to the customers
+* Container & Microservices for the backend processes, creation of rendering images and a Nginx that identify the requests or renders that was generated before, this microservices was Docker images that made several processes, in general the containers was: Tiles engine, Image Cache, Deep API, Nginx, all with Debian 8
+* Data Layer, the team create a Virtual machine with Linux Debian 8, PostgreSQL, Redis and a Blob storage to present this entire layer to the containers backend.
+
+
+![Proposed Solution]({{ site.baseurl }}/images/cartodata007.jpg)
+* Figure: Proposed Solution
+
+### DevOps ###
+After the VSM and a conversation about their times and how can they reduce it, we talk with them about DevOps, what it´s and the benefits to implement DevOps practices, we chose to implement 2, Infrastructure as Code and Continuous Integration /Deployment 
+
+### Infrastructure as Code ###
+The first step was the creation of the containers, so we install Docker Community Edition in their Macs, Linux and Windows, they had already been working on some Docker images of their services.
+Once the containers were tested localy the team may have different versions of the application or micro service in their local repository or push them to Azure Container Registry
+
+![Container Images Repository]({{ site.baseurl }}/images/cartodata008.jpg)
+* Figure: Containers Images
+
+
+Docker push example
+
+![Docker Push]({{ site.baseurl }}/images/cartodata009.jpg)
+* Figure: Docker Push
+
+To mount the image of the container to a SWARM on Azure the team use the Docker command Docker Compose with the sentence: “Docker Compose -t ecarto/ecarto.tiles-engine:beta-1.1”
+
+![Docker Compose]({{ site.baseurl }}/images/cartodata010.jpg)
+•	Figure: Docker Compose
+In the same file file we need to include the networking configuration for the running images
+
+![Compose Networking Configuration]({{ site.baseurl }}/images/cartodata011.jpg)
+•	Figure: Compose Networking configuration
+Cartodata need that the persistence of some files that the containers use so the team configure Volumes through NFS attached to several containers, this is an example of that
+
+![Compose Image container creation]({{ site.baseurl }}/images/cartodata012.jpg)
+•	Figure: Compose Image container creation
+
+The backend and image generation use a container architecture, so we use Azure Container Service ACS to create a docker Swarm Cluster, the recommended architecture for a Swarm Cluster it´s 3 VMS or servers working like Managers and a minimum of 3 VMS or Servers on working nodes mode
+
+During the Hack we just create a swarm of 1 head and 1 Azure Swarm nodes you can connect to the swarm with the command “ssh -A -p 50000 user@theswarmdnsnameonazure.com” once connected you can list the nodes of the swarm using “docker node ls” and you can see the services that are running on the swarm using “docker service ls”
+
+![Connect and Nodes]({{ site.baseurl }}/images/cartodata013.jpg)
+•	Figure: Connecting to swarm and list nodes
+
+![List Services]({{ site.baseurl }}/images/cartodata014.jpg)
+•	Figure: List services on the SWARM 
+To deploy the solution in the Azure Swarm we use the command “docker stack deploy -c ecarto-compose.yml ecarto” 
+
+![Docker Deploy]({{ site.baseurl }}/images/cartodata015.jpg)
+•	Figure: Docker Deploy
+
+The team also customize a Azure Template to use “VM size F” on the Swarm cluster, and the Template was part of their Custom templetes so they can generate other ACS Swarm for testing of in case they need.
+
+![Template ACS SWARM]({{ site.baseurl }}/images/cartodata016.jpg)
+•	Figure: Template ACS SWARM
+
+
+![Template ACS SWARM F2S]({{ site.baseurl }}/images/cartodata017.jpg)
+•	Figure: Template ACS SWARM VM F2S
+
+
+![Template ACS SWARM properties]({{ site.baseurl }}/images/cartodata018.jpg)
+•	Figure: Template ACS SWARM Properties
+
+
+### Continuous Integration & Continuous Deployment ###
+After the local creation and testing of the containers we create an Azure Container Registry so Cartodata can have a centralized repo of their Docker images and they can work with different versions of their solutions and improve their Development process with CI & CD
+
+
+
+	![ACR]({{ site.baseurl }}/images/cartodata019.jpg)
+* Figure: Azure Container Registry
+
+
+![ ACR Images]({{ site.baseurl }}/images/cartodata020.jpg)
+* Figure: ACR Images
+
+
+### App Service ###
+The CARTODATA e-Carto application web on-premises was made using c# and .Net and run in a windows server 2012R2, so we worked together to configure a Azure App Service size S1 type this was the web app creation
+
+
+![Web App Overview]({{ site.baseurl }}/images/cartodata021.jpg)
+* Figure: Web App Overview
+Web App Configuration
+
+![Web App Configuration]({{ site.baseurl }}/images/cartodata022.jpg)
+* Figure: Web App Configuration
+
+![Web App Configuration Full]({{ site.baseurl }}/images/cartodata023.jpg)
+* Figure: Web App Configuration Full
+Service plan Cartodata S1
+
+![Web App Size]({{ site.baseurl }}/images/cartodata024.jpg)
+* Figure: Web App Size
+FTP Configuration of the Web App
+
+![Web App FTP]({{ site.baseurl }}/images/cartodata025.jpg)
+* Figure: Web App FTP
+FTP Client connection to Azure Web App
+
+![Web App FTP Client]({{ site.baseurl }}/images/cartodata026.jpg)
+* Figure: Web App FTP Client
+
+Cartodata need the application to respond dynamically and grow when user demand requires so we configure Auto Scale configuration for the Web App
+
+![Web App Autoscale]({{ site.baseurl }}/images/cartodata027.jpg)
+* Figure: Web App Autoscale
+We also configure a Backup of the web app and Staging so they can have a restore point of the Web App and can manage different versions and test the changes 
+
+![Web App Backup]({{ site.baseurl }}/images/cartodata028.jpg)
+* Figure: Web App Backup
+The Application demand backend services provided by the containers and also need to read and manag data fron a PosgreSQL Server, tis backend and Data systems reside on a Azure Vnet so we configure Vnet Integration to communicate the services in the Azure Vnet and don’t publish the Backend and Data layers of the solution.
+
+![Web App Vnet Integration]({{ site.baseurl }}/images/cartodata029.jpg)
+* Figure: Web App Vnet Integration
+
+
+Application running on Azure Web App
+
+![Web App Running]({{ site.baseurl }}/images/cartodata030.jpg)
+* Figure: Web App Running
+
+
+![Web App Running 2]({{ site.baseurl }}/images/cartodata031.jpg)
+* Figure: Web App Running 2
+
+
+![Web App Running Zoom ]({{ site.baseurl }}/images/cartodata032.jpg)
+* Figure: Web App Running Zoom
+
+
+
+### Data Layer ###
+For the data layer the team generate a VM with Linux Debian in which we set PostgreSQL, Redis and  NFS to present volumes to the container backend layer
+
+
+### Final solution ###
+The resultant solution was a conjunction of the best Azure alternatives, in the first stage the application service or Web App, give e-Carto a full compatibility with their frontend .net and c# code, also increase the availability and provide a PaaS manage and auto scale service with 99.95 SLA. 
+To generate the renders for map images and the zoom in or out we implement an enterprise grade containers cluster with Azure Container Service using a ACS Swarm Cluster and a Azure Container Repository Images ACI.
+In a third level the data stage, because the data base, Redis and storage require data persistence and speed to read the mapping images we decide to use a VM with PostgreSQL, Redis and a Premium Storage. This VM also present storage to the containers that needed.
+Additionally, we configure backups for the components using Azure Backup and Web App Backup configuration  
+
+
+![Final solution ]({{ site.baseurl }}/images/cartodata033.jpg)
+* Figure: Final solution
+
+
+
+### Resource Group of the solution ###
+
+
+![Solution Resource Group ]({{ site.baseurl }}/images/cartodata034.jpg)
+* Figure: Solution Resource Group
+
+### Core project team ###
+* Ana Isabel Silva Cárdenas,	Developer, Cartodata
+* Everardo René Sierra Muñoz, Developer, Cartodata
+* Julio César González Torres, Developer, Cartodata
+* Daniel Sánchez Pillot Gutiérrez, Developer Manager, Cartodata
+* Felix Antoine Audirac Chalifour, Director General, Cartodata 
+* Juan Carlos Villegas Aguilera, Information Technology Director, Cartodata
+* Eduardo Sánchez, TE, Microsoft
+
+![Core project team ]({{ site.baseurl }}/images/cartodata035.jpg)
+•	Figure: Core project team
+
+
+### Conclusions ###
+Cartodata is a company focused in geographical and georeferenced services in Mexico which main customers are from public sector and government institution originally with a full on-premise development solution which has been slow, unreliable and costly solution. With Microsoft OSS Dev Ops proposed solution and the implementation they are migrating totally to Azure their development platform making use of Azure Container Services, Azure Container Registry and SWARM fulfilling a full Continuous Integration with Infrastructure as a Code reducing time to market and considerable cost reduction in deployment.
+
+
+### Additional resources ###
+* Docker for windows 
+https://www.docker.com/docker-windows
+* Docker on Mac 
+https://docs.docker.com/docker-for-mac/install/
+* Docker cloud 
+https://cloud.docker.com
+* Getting started with swarm mode 
+https://docs.docker.com/engine/swarm/swarm-tutorial/
+* Swarms in Docker Cloud 
+https://docs.docker.com/docker-cloud/cloud-swarm/
+* Using Swarm Mode with Docker Cloud 
+https://docs.docker.com/docker-cloud/cloud-swarm/using-swarm-mode/
+* Create a new swarm on Microsoft Azure in Docker Cloud 
+https://docs.docker.com/docker-cloud/cloud-swarm/create-cloud-swarm-azure/
+* Getting Started with Swarm Mode 
+https://docs.microsoft.com/en-us/virtualization/windowscontainers/manage-containers/swarm-mode
+* docker-compose up 
+https://docs.docker.com/compose/reference/up/
+* Swarm mode key concepts 
+https://docs.docker.com/engine/swarm/key-concepts/
+* Builds and images overview 
+https://docs.docker.com/docker-cloud/builds/
+* Azure Container Service with DC/OS and Swarm Documentation 
+https://docs.microsoft.com/en-us/azure/container-service/dcos-swarm/
+* Deploy containers by using Docker Compose 
+https://docs.microsoft.com/en-us/azure/container-service/dcos-swarm/container-service-docker-swarm
+* Web App´s Documentation 
+https://docs.microsoft.com/en-us/azure/app-service-web/
+
+* Web app configuration 
+https://docs.microsoft.com/en-us/azure/app-service-web/web-sites-configure
+* Integrate your Web App with an Azure Virtual Network 
+https://docs.microsoft.com/en-us/azure/app-service-web/web-sites-integrate-with-vnet
+* Azure Container Service 
+https://docs.microsoft.com/en-us/azure/container-service/
+* Azure Container Registry Documentation 
+https://docs.microsoft.com/en-us/azure/container-registry/
+
+
